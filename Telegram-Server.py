@@ -8,6 +8,21 @@ from datetime import datetime
 from telegram import Update, error
 from dotenv import load_dotenv;load_dotenv()
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import threading
+import os
+
+# Dummy web server to satisfy Render's port requirement
+class DummyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is running")
+
+def run_dummy_server():
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(("0.0.0.0", port), DummyHandler)
+    server.serve_forever()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -192,6 +207,7 @@ class IraAI:
 # Main function to set up the bot
 def main():
     try:
+        threading.Thread(target=run_dummy_server, daemon=True).start()
         AI = IraAI()
         BOT_TOEKN = os.getenv('BOT_TOKEN')
     
